@@ -1,93 +1,106 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OrbitGuard - Status Orbital & Risco de Colisao</title>
+<title>OrbitGuard - Monitoramento de Detritos Espaciais</title>
 <style>
-  :root { --bg:#0a0e1a; --card:#121a2e; --line:#1f2a44; --txt:#e6ecff; --mut:#8b9bc4;
-          --crit:#ff4d5e; --att:#ffb020; --nom:#22c55e; --acc:#4da3ff; }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { background:var(--bg); color:var(--txt); font-family:Segoe UI,Roboto,Arial,sans-serif; }
-  header { padding:28px 24px; border-bottom:1px solid var(--line);
-           background:linear-gradient(180deg,#101a33,#0a0e1a); }
-  .brand { display:flex; align-items:center; gap:14px; }
-  .logo { width:42px; height:42px; border-radius:10px;
-          background:radial-gradient(circle at 30% 30%,#4da3ff,#1b3a7a); }
-  h1 { font-size:24px; letter-spacing:.5px; }
-  .tag { color:var(--mut); font-size:13px; margin-top:2px; }
-  .wrap { max-width:1100px; margin:0 auto; padding:24px; }
-  .purpose { background:var(--card); border:1px solid var(--line); border-radius:12px;
-             padding:18px 20px; margin-bottom:20px; }
-  .purpose h2 { font-size:15px; color:var(--acc); margin-bottom:6px; }
-  .purpose p { color:var(--mut); font-size:14px; line-height:1.5; }
-  .cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
-  .kpi { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
-  .kpi .n { font-size:30px; font-weight:700; }
-  .kpi .l { color:var(--mut); font-size:12px; text-transform:uppercase; letter-spacing:1px; }
-  table { width:100%; border-collapse:collapse; background:var(--card);
-          border:1px solid var(--line); border-radius:12px; overflow:hidden; }
-  th,td { padding:12px 14px; text-align:left; font-size:13px; border-bottom:1px solid var(--line); }
-  th { color:var(--mut); text-transform:uppercase; font-size:11px; letter-spacing:1px; }
-  .badge { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
-  .CRITICO { background:rgba(255,77,94,.15); color:var(--crit); }
-  .ATENCAO { background:rgba(255,176,32,.15); color:var(--att); }
-  .NOMINAL { background:rgba(34,197,94,.15); color:var(--nom); }
-  footer { color:var(--mut); font-size:12px; text-align:center; padding:24px; }
-  .ods { display:inline-block; background:#fc9d24; color:#1a1a1a; font-weight:700;
-         border-radius:6px; padding:2px 8px; font-size:12px; }
-  .team { color:var(--mut); font-size:13px; margin-top:8px; }
+:root{--bg:#0a0e1a;--card:#121829;--line:#1f2940;--txt:#e8edf7;--mut:#8aa0c8;
+--crit:#ff4d5e;--att:#ffb020;--nom:#2ecc71;--accent:#4da3ff;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(1200px 600px at 70% -10%,#15203a,var(--bg));
+color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;padding:24px;min-height:100vh}
+header{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#4da3ff,#7b5cff);
+display:flex;align-items:center;justify-content:center;font-size:22px}
+h1{font-size:24px;letter-spacing:.5px}
+.sub{color:var(--mut);font-size:14px;margin-bottom:4px}
+.ods{display:inline-block;background:#c5192d;color:#fff;font-size:12px;font-weight:700;
+padding:3px 10px;border-radius:20px;margin-top:8px}
+.src{display:inline-block;background:#13351f;color:#6fe39a;font-size:12px;font-weight:600;
+padding:3px 10px;border-radius:20px;margin:8px 0 0 8px;border:1px solid #1f6b3d}
+.team{color:var(--mut);font-size:13px;margin-top:10px;line-height:1.6}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.kpi .n{font-size:30px;font-weight:700}.kpi .l{color:var(--mut);font-size:13px;margin-top:4px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);
+border-radius:14px;overflow:hidden}
+th,td{padding:11px 12px;text-align:left;border-bottom:1px solid var(--line);font-size:14px}
+th{color:var(--mut);font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.5px}
+tr:last-child td{border-bottom:none}
+.badge{padding:3px 9px;border-radius:20px;font-size:12px;font-weight:700}
+.CRITICO{background:#3a1116;color:var(--crit)}.ATENCAO{background:#3a2c0e;color:var(--att)}
+.NOMINAL{background:#0f2e1c;color:var(--nom)}
+footer{margin-top:18px;color:var(--mut);font-size:12px;text-align:center}
+a{color:var(--accent)}
 </style>
 </head>
 <body>
 <header>
-  <div class="wrap brand">
-    <div class="logo"></div>
-    <div>
-      <h1>OrbitGuard</h1>
-      <div class="tag">Deteccao de detritos espaciais e risco de colisao em orbita</div>
-    </div>
+  <div class="logo">&#128752;</div>
+  <div>
+    <h1>OrbitGuard</h1>
+    <div class="sub">Deteccao e monitoramento de risco de colisao com detritos espaciais</div>
   </div>
 </header>
-<div class="wrap">
-  <div class="purpose">
-    <h2>Proposito</h2>
-    <p>O OrbitGuard monitora objetos em orbita (satelites ativos e detritos espaciais) e
-    estima o risco de colisao em tempo quase real, apoiando decisoes de manobra evasiva e
-    a sustentabilidade do ambiente orbital. Conectado a <span class="ods">ODS 9</span>
-    Industria, Inovacao e Infraestrutura.</p>
-    <div class="team">Equipe: [INTEGRANTE 1 - RM], [INTEGRANTE 2 - RM], [INTEGRANTE 3 - RM]
-    &middot; Global Solution / SDTCC &middot; Dados simulados para demonstracao.</div>
-  </div>
-  <div class="cards">
-    <div class="kpi"><div class="n" id="k-total">-</div><div class="l">Objetos rastreados</div></div>
-    <div class="kpi"><div class="n" style="color:var(--crit)" id="k-crit">-</div><div class="l">Risco critico</div></div>
-    <div class="kpi"><div class="n" style="color:var(--att)" id="k-att">-</div><div class="l">Atencao</div></div>
-    <div class="kpi"><div class="n" style="color:var(--nom)" id="k-nom">-</div><div class="l">Nominal</div></div>
-  </div>
-  <table>
-    <thead><tr><th>ID</th><th>Objeto</th><th>Tipo</th><th>Altitude</th>
-    <th>Veloc.</th><th>Prob. colisao</th><th>Status</th></tr></thead>
-    <tbody id="rows"><tr><td colspan="7">Carregando...</td></tr></tbody>
-  </table>
+<div>
+  <span class="ods">ODS 9 &middot; Industria, Inovacao e Infraestrutura</span>
+  <span class="src" id="src-badge">Fonte: carregando...</span>
 </div>
-<footer>OrbitGuard &middot; atualizado em {{ updated }} &middot; fonte: /api/objects (dados simulados)</footer>
+<p class="sub" style="margin-top:14px;max-width:760px">
+  Problema: a orbita baixa da Terra (LEO) acumula milhares de detritos que ameacam satelites
+  ativos e missoes espaciais. O OrbitGuard consome dados orbitais reais e hipoteticamente
+  apoia a deteccao e a coleta desses detritos, reduzindo o risco de colisoes em cascata
+  (sindrome de Kessler).
+</p>
+<div class="team">
+  <b>Equipe:</b>
+  Joao Victor dos Santos Morais (RM550453) &middot;
+  Pedro Henrique Farath (RM98608) &middot;
+  Juliana Maita (RM99224) &middot;
+  Luana Cabezaolias (RM99320) &middot;
+  Luca Vilaca (RM551538)
+</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="n" id="k-total">-</div><div class="l">Objetos monitorados</div></div>
+  <div class="kpi"><div class="n" style="color:var(--crit)" id="k-crit">-</div><div class="l">Risco critico</div></div>
+  <div class="kpi"><div class="n" style="color:var(--att)" id="k-att">-</div><div class="l">Atencao</div></div>
+  <div class="kpi"><div class="n" style="color:var(--nom)" id="k-nom">-</div><div class="l">Nominal</div></div>
+</div>
+
+<table>
+  <thead><tr><th>NORAD</th><th>Objeto</th><th>Tipo</th><th>Altitude</th>
+  <th>Veloc.</th><th>Inclin.</th><th>Prob. colisao</th><th>Status</th></tr></thead>
+  <tbody id="rows"><tr><td colspan="8">Carregando dados orbitais...</td></tr></tbody>
+</table>
+
+<footer>OrbitGuard &middot; dados via API <a href="/api/objects">/api/objects</a> &middot; atualizado em <span id="ts">-</span></footer>
+
 <script>
-async function load() {
-  const r = await fetch('/api/objects');
-  const d = await r.json();
-  document.getElementById('k-total').textContent = d.summary.total;
-  document.getElementById('k-crit').textContent = d.summary.criticos;
-  document.getElementById('k-att').textContent = d.summary.atencao;
-  document.getElementById('k-nom').textContent = d.summary.nominais;
-  const rows = d.objects.map(o => `<tr>
-    <td>${o.id}</td><td>${o.name}</td><td>${o.type}</td>
-    <td>${o.altitude_km} km</td><td>${o.velocity_kms} km/s</td>
-    <td>${(o.collision_prob*100).toFixed(1)}%</td>
-    <td><span class="badge ${o.risk}">${o.risk}</span></td></tr>`).join('');
-  document.getElementById('rows').innerHTML = rows;
+async function load(){
+  try{
+    const r = await fetch('/api/objects');
+    const d = await r.json();
+    const s = d.summary;
+    document.getElementById('k-total').textContent = s.total;
+    document.getElementById('k-crit').textContent = s.criticos;
+    document.getElementById('k-att').textContent = s.atencao;
+    document.getElementById('k-nom').textContent = s.nominais;
+    document.getElementById('ts').textContent = new Date(s.timestamp).toLocaleString('pt-BR');
+    document.getElementById('src-badge').textContent = 'Fonte: ' + (s.source || '-');
+    const rows = d.objects.map(o => `<tr>
+      <td>${o.norad_id ?? '-'}</td><td>${o.name}</td><td>${o.type}</td>
+      <td>${o.altitude_km} km</td><td>${o.velocity_kms} km/s</td>
+      <td>${o.inclination_deg}&deg;</td><td>${(o.collision_prob*100).toFixed(1)}%</td>
+      <td><span class="badge ${o.risk}">${o.risk}</span></td></tr>`).join('');
+    document.getElementById('rows').innerHTML = rows;
+  }catch(e){
+    document.getElementById('rows').innerHTML = '<tr><td colspan="8">Erro ao carregar dados.</td></tr>';
+  }
 }
-load(); setInterval(load, 5000);
+load();
+setInterval(load, 60000);
 </script>
 </body>
 </html>
