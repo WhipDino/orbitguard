@@ -11,10 +11,9 @@ app = Flask(__name__)
 # Fonte de dados orbitais REAIS (publica, sem login/chave): CelesTrak GP API.
 # Grupo "cosmos-2251-debris": fragmentos reais da colisao Cosmos-2251 / Iridium-33 (2009),
 # um dos maiores eventos de geracao de detritos espaciais da historia.
-CELESTRAK_URL = (
-    "https://celestrak.org/NORAD/elements/gp.php"
-    "?GROUP=cosmos-2251-debris&FORMAT=json"
-)
+CELESTRAK_BASE = "https://celestrak.org/NORAD/elements/gp.php?GROUP={g}&FORMAT=json"
+# Detritos reais (alto risco) + satelites ativos (incluindo orbitas altas = nominal)
+CELESTRAK_GROUPS = ["cosmos-2251-debris", "active"]
 
 # Constantes fisicas (Terra)
 MU = 398600.4418          # km^3/s^2  -> parametro gravitacional padrao
@@ -37,9 +36,9 @@ _FALLBACK = [
 
 
 def _risk_from(altitude_km, collision_prob):
-    if collision_prob >= 0.7 or altitude_km < 500:
+    if collision_prob >= 0.66:
         return "CRITICO"
-    if collision_prob >= 0.35:
+    if collision_prob >= 0.33:
         return "ATENCAO"
     return "NOMINAL"
 
@@ -59,7 +58,9 @@ def _transform(gp):
     is_deb = "DEB" in name.upper() or "R/B" in name.upper()
     obj_type = "Detrito" if is_deb else "Objeto Rastreado"
     bstar = abs(float(gp.get("BSTAR", 0) or 0))
-    prob = max(0.0, min(0.99, (1.0 / max(altitude, 1)) * 250 + bstar * 800))
+    alt_score = max(0.0, min(1.0, (1200.0 - altitude) / 900.0))
+    drag_score = min(1.0, bstar * 2000.0)
+    prob = max(0.03, min(0.97, 0.65 * alt_score + 0.35 * drag_score))
     return {
         "id": gp.get("OBJECT_ID", str(norad)),
         "norad_id": norad,
@@ -79,12 +80,21 @@ def fetch_objects():
     if _CACHE["data"] and now - _CACHE["ts"] < _CACHE_TTL:
         return _CACHE["data"], _CACHE["source"]
     try:
-        r = requests.get(CELESTRAK_URL, timeout=15,
-                         headers={"User-Agent": "OrbitGuard/2.0"})
-        r.raise_for_status()
-        raw = r.json()
+        raw = []
+        for g in CELESTRAK_GROUPS:
+            resp = requests.get(CELESTRAK_BASE.format(g=g), timeout=15,
+                                headers={"User-Agent": "OrbitGuard/2.0"})
+            resp.raise_for_status()
+            data = resp.json()
+            # amostra ate 400 por grupo para nao sobrecarregar o plano F1
+            raw.extend(data[:400])
         objs = [t for t in (_transform(g) for g in raw) if t]
-        objs = sorted(objs, key=lambda o: o["collision_prob"], reverse=True)[:25]
+        # amostra 25 distribuidos por altitude (faixa variada => risco variado)
+        objs = sorted(objs, key=lambda o: o["altitude_km"])
+        if len(objs) > 25:
+            step = len(objs) / 25.0
+            objs = [objs[int(i * step)] for i in range(25)]
+        objs = sorted(objs, key=lambda o: o["collision_prob"], reverse=True)
         if objs:
             _CACHE.update(ts=now, data=objs, source="CelesTrak (dados reais)")
             return objs, "CelesTrak (dados reais)"
