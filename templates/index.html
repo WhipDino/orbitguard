@@ -4,192 +4,271 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OrbitGuard — Monitoramento de Detritos Espaciais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#070b18;--bg2:#0d1430;--card:#111a36;--card2:#0f1730;--line:#1e2a52;--txt:#e8edff;--mut:#8a98c8;--accent:#5b8cff;--accent2:#37e0c8;--crit:#ff4d6d;--aten:#ffb84d;--nom:#3ddc84;}
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
-body{background:radial-gradient(1200px 600px at 80% -10%,#16224d 0%,transparent 60%),radial-gradient(900px 500px at 0% 10%,#0c1a3a 0%,transparent 55%),var(--bg);color:var(--txt);line-height:1.55;min-height:100vh}
-a{color:var(--accent)}
-.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
-.topbar{position:sticky;top:0;z-index:30;backdrop-filter:blur(10px);background:rgba(7,11,24,.72);border-bottom:1px solid var(--line)}
-.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
-.brand{display:flex;align-items:center;gap:11px;font-weight:700;font-size:1.15rem;letter-spacing:.3px}
-.logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:18px;box-shadow:0 0 18px rgba(91,140,255,.5)}
-.nav{display:flex;gap:22px;font-size:.92rem}
-.nav a{color:var(--mut);text-decoration:none;transition:.2s}
+:root{--space:#05070D;--panel:#0C1120;--line:#1B2336;--txt:#E6ECF5;--mut:#8A97AD;--cyan:#5BC8FF;--crit:#FF4D4D;--aten:#FFB020;--nom:#2BD4B5;--mono:'JetBrains Mono',ui-monospace,monospace;--head:'Space Grotesk',sans-serif;--body:'IBM Plex Sans',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--space);color:var(--txt);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh;position:relative}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:46px 46px;opacity:.18;mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 30%,transparent 80%)}
+h1,h2,h3{font-family:var(--head);font-weight:600;letter-spacing:-.01em}
+a{color:var(--cyan);text-decoration:none}
+.wrap{max-width:1240px;margin:0 auto;padding:0 28px;position:relative;z-index:1}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+.eyebrow b{color:var(--cyan);font-weight:500}
+.panel{position:relative;background:var(--panel);border:1px solid var(--line)}
+.panel::before,.panel::after{content:'';position:absolute;width:9px;height:9px;border:1px solid var(--cyan);opacity:.55}
+.panel::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.panel::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.tick-tr,.tick-bl{position:absolute;width:9px;height:9px;border:1px solid var(--cyan);opacity:.55}
+.tick-tr{top:-1px;right:-1px;border-left:0;border-bottom:0}
+.tick-bl{bottom:-1px;left:-1px;border-right:0;border-top:0}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(5,7,13,.88);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .mark{width:30px;height:30px;flex-shrink:0}
+.brand .nm{font-family:var(--head);font-weight:700;font-size:1.12rem;letter-spacing:.02em}
+.brand .nm span{color:var(--cyan)}
+.nav{display:flex;gap:26px;font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase}
+.nav a{color:var(--mut);transition:color .2s}
 .nav a:hover{color:var(--txt)}
-.live{display:flex;align-items:center;gap:7px;font-size:.82rem;color:var(--nom)}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--nom);box-shadow:0 0 0 0 rgba(61,220,132,.7);animation:pulse 2s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(61,220,132,.6)}70%{box-shadow:0 0 0 9px rgba(61,220,132,0)}100%{box-shadow:0 0 0 0 rgba(61,220,132,0)}}
-.hero{padding:64px 0 30px;text-align:center}
-.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--line);border-radius:999px;font-size:.8rem;color:var(--mut);background:rgba(91,140,255,.07)}
-.hero h1{font-size:2.9rem;line-height:1.12;margin:20px 0 14px;font-weight:800;letter-spacing:-.5px}
-.hero h1 span{background:linear-gradient(120deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{max-width:680px;margin:0 auto;color:var(--mut);font-size:1.12rem}
-.cta{margin-top:26px;display:flex;gap:13px;justify-content:center;flex-wrap:wrap}
-.btn{padding:12px 22px;border-radius:11px;font-weight:600;text-decoration:none;font-size:.95rem;transition:.2s;border:1px solid transparent}
-.btn-p{background:linear-gradient(135deg,var(--accent),#7aa2ff);color:#fff;box-shadow:0 8px 24px rgba(91,140,255,.35)}
-.btn-p:hover{transform:translateY(-2px)}
-.btn-s{background:transparent;border-color:var(--line);color:var(--txt)}
-.btn-s:hover{border-color:var(--accent);background:rgba(91,140,255,.08)}
-.section{padding:42px 0}
-.section h2{font-size:1.7rem;font-weight:700;margin-bottom:6px}
-.section .sub{color:var(--mut);margin-bottom:26px;max-width:720px}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.kpi{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:16px;padding:22px;position:relative;overflow:hidden}
-.kpi::after{content:'';position:absolute;inset:0 0 auto 0;height:3px}
-.kpi.k-total::after{background:var(--accent)}
-.kpi.k-crit::after{background:var(--crit)}
-.kpi.k-aten::after{background:var(--aten)}
-.kpi.k-nom::after{background:var(--nom)}
-.kpi .lbl{font-size:.82rem;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
-.kpi .val{font-size:2.5rem;font-weight:800;margin-top:6px}
-.kpi.k-crit .val{color:var(--crit)}
-.kpi.k-aten .val{color:var(--aten)}
-.kpi.k-nom .val{color:var(--nom)}
-.kpi .hint{font-size:.8rem;color:var(--mut);margin-top:4px}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px}
-.step .num{width:38px;height:38px;border-radius:10px;background:rgba(91,140,255,.14);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:1.05rem;margin-bottom:14px}
-.step h3{font-size:1.1rem;margin-bottom:7px}
-.step p{color:var(--mut);font-size:.95rem}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
-.panel-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:12px}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--mut)}
-.legend span{display:inline-flex;align-items:center;gap:7px}
-.chip{width:11px;height:11px;border-radius:50%}
-.chip.c-crit{background:var(--crit)}.chip.c-aten{background:var(--aten)}.chip.c-nom{background:var(--nom)}
-.tools{display:flex;gap:10px;flex-wrap:wrap}
-.tools input,.tools select{background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:9px 13px;border-radius:10px;font-size:.9rem;outline:none}
-.tools input:focus,.tools select:focus{border-color:var(--accent)}
-.tbl-scroll{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:.92rem}
-thead th{text-align:left;padding:13px 18px;color:var(--mut);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
-thead th:hover{color:var(--txt)}
-tbody td{padding:13px 18px;border-bottom:1px solid rgba(30,42,82,.5);white-space:nowrap}
-tbody tr:hover{background:rgba(91,140,255,.05)}
-.obj-name{font-weight:600}
-.obj-id{color:var(--mut);font-size:.8rem}
-.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.74rem;font-weight:700;letter-spacing:.4px}
-.tag.t-crit{background:rgba(255,77,109,.16);color:var(--crit)}
-.tag.t-aten{background:rgba(255,184,77,.16);color:var(--aten)}
-.tag.t-nom{background:rgba(61,220,132,.16);color:var(--nom)}
-.risk-bar{width:80px;height:7px;border-radius:6px;background:var(--line);overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px}
-.risk-fill{height:100%;border-radius:6px}
-.ods{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:center}
-.ods-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
-.ods-num{display:inline-flex;align-items:center;gap:10px;background:#fd6925;color:#fff;font-weight:800;padding:8px 14px;border-radius:10px;font-size:.92rem;margin-bottom:14px}
-.ods-card p{color:var(--mut)}
-.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
-.member{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;align-items:center;gap:13px}
-.av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-weight:700;color:#fff;flex-shrink:0}
-.member .nm{font-weight:600;font-size:.95rem}
-.member .rm{color:var(--mut);font-size:.82rem}
-footer{border-top:1px solid var(--line);padding:30px 0;color:var(--mut);font-size:.88rem;text-align:center;margin-top:30px}
-footer .src{display:inline-flex;align-items:center;gap:7px;margin-top:8px}
-@media(max-width:860px){.kpis{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:1fr}.ods{grid-template-columns:1fr}.hero h1{font-size:2.1rem}.nav{display:none}}
+.status-pill{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;color:var(--nom);text-transform:uppercase}
+.led{width:8px;height:8px;border-radius:50%;background:var(--nom);box-shadow:0 0 8px var(--nom);animation:blink 2.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.hero{padding:80px 0 56px;border-bottom:1px solid var(--line)}
+.hero .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:54px;align-items:center}
+.hero h1{font-size:3.4rem;line-height:1.04;font-weight:700;margin:20px 0 22px}
+.hero h1 em{font-style:normal;color:var(--cyan)}
+.hero .lead{color:var(--mut);font-size:1.08rem;max-width:560px}
+.hero .actions{margin-top:30px;display:flex;gap:14px;flex-wrap:wrap}
+.ibtn{font-family:var(--mono);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;padding:13px 22px;border:1px solid var(--line);border-radius:3px;display:inline-flex;align-items:center;gap:9px;transition:.18s;cursor:pointer}
+.ibtn-primary{background:var(--cyan);color:#04121d;border-color:var(--cyan);font-weight:600}
+.ibtn-primary:hover{box-shadow:0 0 18px rgba(91,200,255,.4);transform:translateY(-1px)}
+.ibtn-ghost{background:transparent;color:var(--txt)}
+.ibtn-ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+.radar{position:relative;aspect-ratio:1;max-width:420px;margin-left:auto;width:100%}
+.radar svg{width:100%;height:100%;display:block}
+.ring{fill:none;stroke:var(--line);stroke-width:1}
+.ring-c{fill:none;stroke:var(--cyan);stroke-width:1;opacity:.35}
+.sweep{transform-origin:center;animation:spin 6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.blip{fill:var(--cyan)}
+.blip.b-crit{fill:var(--crit)}
+.blip.b-aten{fill:var(--aten)}
+.radar-meta{position:absolute;left:0;bottom:-2px;font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;color:var(--mut);text-transform:uppercase}
+.section{padding:64px 0;border-bottom:1px solid var(--line)}
+.sec-head{margin-bottom:36px}
+.sec-head h2{font-size:1.9rem;margin:10px 0 6px}
+.sec-head p{color:var(--mut);max-width:620px}
+.readouts{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);background:var(--panel)}
+.readout{padding:26px 24px;border-right:1px solid var(--line);position:relative}
+.readout:last-child{border-right:0}
+.readout .lbl{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);display:flex;align-items:center;gap:8px}
+.readout .num{font-family:var(--mono);font-weight:600;font-size:3rem;line-height:1;margin:14px 0 4px;font-variant-numeric:tabular-nums}
+.readout .unit{font-family:var(--mono);font-size:.7rem;color:var(--mut);letter-spacing:.1em}
+.readout.r-crit .num{color:var(--crit);text-shadow:0 0 18px rgba(255,77,77,.45)}
+.readout.r-aten .num{color:var(--aten)}
+.readout.r-nom .num{color:var(--nom)}
+.dot-s{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot-s.d-crit{background:var(--crit)}.dot-s.d-aten{background:var(--aten)}.dot-s.d-nom{background:var(--nom)}.dot-s.d-cyan{background:var(--cyan)}
+.pipe{display:grid;grid-template-columns:repeat(3,1fr);gap:0;position:relative}
+.pipe::before{content:'';position:absolute;top:34px;left:14%;right:14%;height:1px;background:linear-gradient(90deg,var(--line),var(--cyan),var(--line));z-index:0}
+.stage{position:relative;z-index:1;padding:0 22px;text-align:center}
+.stage .node{width:54px;height:54px;margin:0 auto 18px;border:1px solid var(--line);background:var(--space);border-radius:50%;display:grid;place-items:center;color:var(--cyan)}
+.stage .st-no{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;color:var(--mut);text-transform:uppercase}
+.stage h3{font-size:1.12rem;margin:6px 0 8px}
+.stage p{color:var(--mut);font-size:.94rem}
+.console{border:1px solid var(--line);background:var(--panel);position:relative}
+.console-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.console-bar .title{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--space);padding:8px 12px;border-radius:3px}
+.search svg{flex-shrink:0;color:var(--mut)}
+.search input{background:transparent;border:0;outline:0;color:var(--txt);font-family:var(--mono);font-size:.8rem;width:200px}
+.search input::placeholder{color:var(--mut)}
+.toggles{display:flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.toggle{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:8px 13px;background:var(--space);color:var(--mut);border:0;border-right:1px solid var(--line);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:7px}
+.toggle:last-child{border-right:0}
+.toggle:hover{color:var(--txt)}
+.toggle.on{background:rgba(91,200,255,.1);color:var(--cyan)}
+.toggle.on.t-crit{background:rgba(255,77,77,.12);color:var(--crit)}
+.toggle.on.t-aten{background:rgba(255,176,32,.12);color:var(--aten)}
+.toggle.on.t-nom{background:rgba(43,212,181,.12);color:var(--nom)}
+.tbl-scroll{overflow-x:auto;max-height:600px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.82rem}
+thead th{position:sticky;top:0;z-index:2;background:#0a0f1c;text-align:left;padding:13px 18px;color:var(--mut);font-weight:500;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--cyan)}
+thead th .ar{opacity:.4}
+tbody td{padding:12px 18px;border-bottom:1px solid rgba(27,35,54,.6);white-space:nowrap;font-variant-numeric:tabular-nums}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:rgba(91,200,255,.06)}
+tbody tr:hover td:first-child{box-shadow:inset 2px 0 0 var(--cyan)}
+.cell-name{font-family:var(--body);font-weight:500;color:var(--txt)}
+.cell-mut{color:var(--mut)}
+.prob{display:flex;align-items:center;gap:10px}
+.prob .track{width:72px;height:5px;background:var(--line);border-radius:0;overflow:hidden;flex-shrink:0}
+.prob .fill{height:100%}
+.prob .pct{color:var(--mut);min-width:34px}
+.stat{display:inline-flex;align-items:center;gap:8px;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.stat .led-s{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.stat.s-crit{color:var(--crit)}.stat.s-crit .led-s{background:var(--crit);box-shadow:0 0 8px var(--crit)}
+.stat.s-aten{color:var(--aten)}.stat.s-aten .led-s{background:var(--aten)}
+.stat.s-nom{color:var(--nom)}.stat.s-nom .led-s{background:var(--nom)}
+.mission{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
+.mission .lead-txt{font-size:1.18rem;line-height:1.7;color:var(--txt)}
+.mission .lead-txt+p{color:var(--mut);margin-top:16px}
+.ods{border:1px solid var(--line);background:var(--panel);padding:30px;position:relative}
+.ods .tag-ods{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--aten);border:1px solid var(--aten);padding:6px 12px;border-radius:3px;margin-bottom:18px}
+.ods h3{font-size:1.25rem;margin-bottom:10px}
+.ods p{color:var(--mut)}
+.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.member{background:var(--panel);padding:20px 22px}
+.member .idx{font-family:var(--mono);font-size:.66rem;color:var(--cyan);letter-spacing:.14em}
+.member .nm{font-family:var(--head);font-weight:500;margin:8px 0 4px;font-size:1rem}
+.member .rm{font-family:var(--mono);font-size:.78rem;color:var(--mut);letter-spacing:.08em}
+footer{padding:40px 0}
+footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+footer .f-mono{font-family:var(--mono);font-size:.74rem;color:var(--mut);letter-spacing:.08em}
+footer .f-mono b{color:var(--cyan);font-weight:500}
+@media(max-width:920px){.hero .grid{grid-template-columns:1fr;gap:40px}.radar{max-width:320px}.hero h1{font-size:2.5rem}.readouts{grid-template-columns:1fr 1fr}.readout:nth-child(2){border-right:0}.readout:nth-child(1),.readout:nth-child(2){border-bottom:1px solid var(--line)}.pipe{grid-template-columns:1fr;gap:30px}.pipe::before{display:none}.mission{grid-template-columns:1fr;gap:32px}.nav{display:none}}
 </style>
 </head>
 <body>
 <header class="topbar"><div class="wrap">
-<div class="brand"><div class="logo">🛰️</div> OrbitGuard</div>
-<nav class="nav"><a href="#painel">Painel</a><a href="#como">Como funciona</a><a href="#ods">Missão &amp; ODS</a><a href="#equipe">Equipe</a></nav>
-<div class="live"><span class="dot"></span> Dados ao vivo</div>
+<div class="brand">
+<svg class="mark" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="5" stroke="#5BC8FF" stroke-width="1.5"/><ellipse cx="16" cy="16" rx="14" ry="6" stroke="#1B2336" stroke-width="1.5" transform="rotate(-28 16 16)"/><circle cx="27" cy="10" r="1.6" fill="#5BC8FF"/></svg>
+<span class="nm">Orbit<span>Guard</span></span>
+</div>
+<nav class="nav"><a href="#painel">Painel</a><a href="#pipeline">Pipeline</a><a href="#missao">Missão</a><a href="#equipe">Equipe</a></nav>
+<div class="status-pill"><span class="led"></span> Sistema online</div>
 </div></header>
-
-<section class="hero"><div class="wrap">
-<span class="badge">✨ Fonte: CelesTrak · Dados orbitais reais</span>
-<h1>Rastreamento de <span>detritos espaciais</span><br>para evitar colisões em órbita</h1>
-<p>O OrbitGuard monitora objetos em órbita da Terra, calcula a altitude e a velocidade a partir de parâmetros orbitais reais e classifica o risco de colisão de cada um — ajudando a proteger satélites ativos e a sustentabilidade do espaço.</p>
-<div class="cta"><a class="btn btn-p" href="#painel">Ver painel de risco</a><a class="btn btn-s" href="/api/objects" target="_blank">Explorar a API</a></div>
-</div></section>
+<section class="hero"><div class="wrap"><div class="grid">
+<div>
+<div class="eyebrow">Dados ao vivo · <b>CelesTrak</b></div>
+<h1>Rastreamento de <em>detritos espaciais</em> para evitar colisões em órbita</h1>
+<p class="lead">O OrbitGuard monitora objetos em órbita da Terra, calcula a altitude e a velocidade a partir de parâmetros orbitais reais e classifica o risco de colisão de cada um — ajudando a proteger satélites ativos e a sustentabilidade do espaço.</p>
+<div class="actions">
+<a class="ibtn ibtn-primary" href="#painel">Abrir painel de risco</a>
+<a class="ibtn ibtn-ghost" href="/api/objects" target="_blank">Inspecionar API ↗</a>
+</div>
+</div>
+<div class="radar">
+<svg viewBox="0 0 200 200">
+<circle class="ring" cx="100" cy="100" r="96"/><circle class="ring" cx="100" cy="100" r="70"/><circle class="ring" cx="100" cy="100" r="44"/><circle class="ring-c" cx="100" cy="100" r="18"/>
+<line class="ring" x1="4" y1="100" x2="196" y2="100"/><line class="ring" x1="100" y1="4" x2="100" y2="196"/>
+<g class="sweep"><path d="M100 100 L100 4 A96 96 0 0 1 168 32 Z" fill="url(#sg)"/></g>
+<defs><radialGradient id="sg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(100 100) rotate(-45) scale(96)"><stop stop-color="#5BC8FF" stop-opacity=".35"/><stop offset="1" stop-color="#5BC8FF" stop-opacity="0"/></radialGradient></defs>
+<circle class="blip b-crit" cx="64" cy="78" r="2.6"/><circle class="blip b-aten" cx="132" cy="120" r="2.4"/><circle class="blip" cx="118" cy="58" r="2.2"/><circle class="blip" cx="78" cy="140" r="2.2"/><circle class="blip b-crit" cx="150" cy="86" r="2.4"/>
+</svg>
+<div class="radar-meta">Varredura orbital · LEO → GEO</div>
+</div>
+</div></div></section>
 <section class="section" id="painel"><div class="wrap">
-<h2>Panorama orbital em tempo real</h2>
-<p class="sub">Resumo dos objetos monitorados nesta consulta, classificados pelo nível de risco de colisão calculado pelo OrbitGuard.</p>
-<div class="kpis">
-<div class="kpi k-total"><div class="lbl">Objetos monitorados</div><div class="val">{{ summary.total }}</div><div class="hint">na consulta atual</div></div>
-<div class="kpi k-crit"><div class="lbl">Risco crítico</div><div class="val">{{ summary.criticos }}</div><div class="hint">atenção imediata</div></div>
-<div class="kpi k-aten"><div class="lbl">Em atenção</div><div class="val">{{ summary.atencao }}</div><div class="hint">monitorar de perto</div></div>
-<div class="kpi k-nom"><div class="lbl">Nominal</div><div class="val">{{ summary.nominais }}</div><div class="hint">situação estável</div></div>
+<div class="sec-head">
+<div class="eyebrow">Telemetria · Resumo da consulta</div>
+<h2>Panorama orbital</h2>
+<p>Leituras dos objetos monitorados nesta consulta, classificados pelo nível de risco de colisão calculado pelo OrbitGuard.</p>
+</div>
+<div class="readouts">
+<div class="readout"><div class="lbl"><span class="dot-s d-cyan"></span> Objetos monitorados</div><div class="num">{{ summary.total }}</div><div class="unit">na consulta atual</div></div>
+<div class="readout r-crit"><div class="lbl"><span class="dot-s d-crit"></span> Risco crítico</div><div class="num">{{ summary.criticos }}</div><div class="unit">atenção imediata</div></div>
+<div class="readout r-aten"><div class="lbl"><span class="dot-s d-aten"></span> Em atenção</div><div class="num">{{ summary.atencao }}</div><div class="unit">monitorar de perto</div></div>
+<div class="readout r-nom"><div class="lbl"><span class="dot-s d-nom"></span> Nominal</div><div class="num">{{ summary.nominais }}</div><div class="unit">situação estável</div></div>
 </div>
 </div></section>
-
-<section class="section" id="como"><div class="wrap">
+<section class="section" id="pipeline"><div class="wrap">
+<div class="sec-head">
+<div class="eyebrow">Fluxo de dados · Pipeline</div>
 <h2>Como o OrbitGuard funciona</h2>
-<p class="sub">Da coleta de dados públicos até a classificação de risco, em três etapas.</p>
-<div class="steps">
-<div class="step"><div class="num">1</div><h3>Coleta de dados reais</h3><p>Buscamos parâmetros orbitais (TLE/OMM) públicos do CelesTrak, incluindo detritos do COSMOS 2251 e satélites ativos, com cache para respeitar os limites da fonte.</p></div>
-<div class="step"><div class="num">2</div><h3>Cálculo orbital</h3><p>A partir do movimento médio e da excentricidade aplicamos as leis de Kepler para estimar altitude, velocidade e inclinação de cada objeto.</p></div>
-<div class="step"><div class="num">3</div><h3>Classificação de risco</h3><p>Combinamos altitude e arrasto atmosférico em um índice de probabilidade de colisão e classificamos cada objeto como Crítico, Atenção ou Nominal.</p></div>
+<p>Da coleta de dados públicos até a classificação de risco, em três estágios encadeados.</p>
+</div>
+<div class="pipe">
+<div class="stage"><div class="node"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12a9 9 0 0 1 9-9m0 18a9 9 0 0 1-9-9"/><path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-9 9"/><circle cx="12" cy="12" r="2.5"/></svg></div><div class="st-no">Estágio 01</div><h3>Coleta de dados reais</h3><p>Buscamos parâmetros orbitais (TLE/OMM) públicos do CelesTrak, incluindo detritos do COSMOS 2251 e satélites ativos, com cache para respeitar os limites da fonte.</p></div>
+<div class="stage"><div class="node"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V5m0 14h16M8 16l3-4 3 2 4-6"/></svg></div><div class="st-no">Estágio 02</div><h3>Cálculo orbital</h3><p>A partir do movimento médio e da excentricidade aplicamos as leis de Kepler para estimar altitude, velocidade e inclinação de cada objeto.</p></div>
+<div class="stage"><div class="node"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3l8 4v5c0 5-3.4 8-8 9-4.6-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div><div class="st-no">Estágio 03</div><h3>Classificação de risco</h3><p>Combinamos altitude e arrasto atmosférico em um índice de probabilidade de colisão e classificamos cada objeto como Crítico, Atenção ou Nominal.</p></div>
 </div>
 </div></section>
-<section class="section" style="padding-top:0"><div class="wrap">
-<div class="panel">
-<div class="panel-head">
-<div class="legend"><span><i class="chip c-crit"></i> Crítico</span><span><i class="chip c-aten"></i> Atenção</span><span><i class="chip c-nom"></i> Nominal</span></div>
+<section class="section"><div class="wrap">
+<div class="console"><span class="tick-tr"></span><span class="tick-bl"></span>
+<div class="console-bar">
+<div class="title">// Console de objetos rastreados</div>
 <div class="tools">
-<input id="q" type="search" placeholder="Buscar objeto ou NORAD ID...">
-<select id="f"><option value="">Todos os riscos</option><option value="CRITICO">Só críticos</option><option value="ATENCAO">Só atenção</option><option value="NOMINAL">Só nominais</option></select>
+<div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg><input id="q" type="search" placeholder="buscar nome ou NORAD ID..."></div>
+<div class="toggles">
+<button class="toggle on" data-r="">Todos</button>
+<button class="toggle t-crit" data-r="CRITICO"><span class="dot-s d-crit"></span> Crit</button>
+<button class="toggle t-aten" data-r="ATENCAO"><span class="dot-s d-aten"></span> Aten</button>
+<button class="toggle t-nom" data-r="NOMINAL"><span class="dot-s d-nom"></span> Nom</button>
+</div>
 </div>
 </div>
 <div class="tbl-scroll"><table id="tbl">
 <thead><tr>
-<th data-k="name">Objeto</th><th data-k="type">Tipo</th><th data-k="norad_id">NORAD</th>
-<th data-k="altitude_km">Altitude (km)</th><th data-k="velocity_kms">Velocidade (km/s)</th>
-<th data-k="inclination_deg">Inclinação</th><th data-k="collision_prob">Prob. colisão</th><th data-k="risk">Status</th>
+<th data-k="name">Objeto <span class="ar">↕</span></th><th data-k="type">Tipo</th><th data-k="norad_id">NORAD</th>
+<th data-k="altitude_km">Alt (km) <span class="ar">↕</span></th><th data-k="velocity_kms">Vel (km/s)</th>
+<th data-k="inclination_deg">Inclin.</th><th data-k="collision_prob">Prob. colisão <span class="ar">↕</span></th><th data-k="risk">Status</th>
 </tr></thead>
 <tbody>
 {% for o in objects %}
 {% set rk = o.risk %}
-{% if rk == 'CRITICO' %}{% set cls='crit' %}{% set lbl='Crítico' %}{% set col='#ff4d6d' %}
-{% elif rk == 'ATENCAO' %}{% set cls='aten' %}{% set lbl='Atenção' %}{% set col='#ffb84d' %}
-{% else %}{% set cls='nom' %}{% set lbl='Nominal' %}{% set col='#3ddc84' %}{% endif %}
+{% if rk == 'CRITICO' %}{% set cls='crit' %}{% set lbl='Crítico' %}{% set col='#FF4D4D' %}
+{% elif rk == 'ATENCAO' %}{% set cls='aten' %}{% set lbl='Atenção' %}{% set col='#FFB020' %}
+{% else %}{% set cls='nom' %}{% set lbl='Nominal' %}{% set col='#2BD4B5' %}{% endif %}
 <tr data-risk="{{ rk }}" data-search="{{ o.name|lower }} {{ o.norad_id }}">
-<td class="obj-name">{{ o.name }}</td>
-<td>{{ o.type }}</td>
-<td class="obj-id">{{ o.norad_id }}</td>
+<td class="cell-name">{{ o.name }}</td>
+<td class="cell-mut">{{ o.type }}</td>
+<td class="cell-mut">{{ o.norad_id }}</td>
 <td>{{ '%.0f'|format(o.altitude_km) }}</td>
 <td>{{ '%.2f'|format(o.velocity_kms) }}</td>
 <td>{{ '%.1f'|format(o.inclination_deg) }}°</td>
-<td><span class="risk-bar"><span class="risk-fill" style="width:{{ (o.collision_prob*100)|round|int }}%;background:{{ col }}"></span></span>{{ (o.collision_prob*100)|round|int }}%</td>
-<td><span class="tag t-{{ cls }}">{{ lbl }}</span></td>
+<td><div class="prob"><span class="track"><span class="fill" style="width:{{ (o.collision_prob*100)|round|int }}%;background:{{ col }}"></span></span><span class="pct">{{ (o.collision_prob*100)|round|int }}%</span></div></td>
+<td><span class="stat s-{{ cls }}"><span class="led-s"></span>{{ lbl }}</span></td>
 </tr>
 {% endfor %}
 </tbody></table></div>
 </div>
 </div></section>
-<section class="section" id="ods"><div class="wrap"><div class="ods">
-<div class="ods-card">
-<h2>A missão</h2>
-<p>Mais de 36 mil objetos com mais de 10 cm orbitam a Terra a velocidades superiores a 7 km/s. Cada colisão gera novos fragmentos (efeito Kessler), ameaçando satélites de comunicação, observação e a própria ISS. O OrbitGuard dá visibilidade a esse risco como primeiro passo para a detecção e, hipoteticamente, a coleta de detritos.</p>
+<section class="section" id="missao"><div class="wrap">
+<div class="sec-head"><div class="eyebrow">Contexto · Indústria espacial</div><h2>A missão</h2></div>
+<div class="mission">
+<div>
+<p class="lead-txt">Mais de 36 mil objetos com mais de 10 cm orbitam a Terra a velocidades superiores a 7 km/s.</p>
+<p>Cada colisão gera novos fragmentos (efeito Kessler), ameaçando satélites de comunicação, observação e a própria ISS. O OrbitGuard dá visibilidade a esse risco como primeiro passo para a detecção e, hipoteticamente, a coleta de detritos.</p>
 </div>
-<div class="ods-card">
-<span class="ods-num">ODS 9</span>
-<h3 style="margin-bottom:8px">Indústria, Inovação e Infraestrutura</h3>
+<div class="ods"><span class="tick-tr"></span><span class="tick-bl"></span>
+<span class="tag-ods"><span class="dot-s d-aten"></span> ODS 9</span>
+<h3>Indústria, Inovação e Infraestrutura</h3>
 <p>A sustentabilidade da infraestrutura orbital é essencial para telecomunicações, GPS e monitoramento climático. Monitorar detritos protege esse ativo crítico e apoia a inovação no setor espacial.</p>
 </div>
-</div></div></section>
-
-<section class="section" id="equipe"><div class="wrap">
-<h2>Equipe</h2>
-<p class="sub">Global Solution · Secure DevOps Tools &amp; Cloud Computing (SDTCC) · FIAP</p>
-<div class="team">
-<div class="member"><div class="av">JV</div><div><div class="nm">João Victor dos Santos Morais</div><div class="rm">RM550453</div></div></div>
-<div class="member"><div class="av">PH</div><div><div class="nm">Pedro Henrique Farath</div><div class="rm">RM98608</div></div></div>
-<div class="member"><div class="av">JM</div><div><div class="nm">Juliana Maita</div><div class="rm">RM99224</div></div></div>
-<div class="member"><div class="av">LC</div><div><div class="nm">Luana Cabezaolias</div><div class="rm">RM99320</div></div></div>
-<div class="member"><div class="av">LV</div><div><div class="nm">Luca Vilaça</div><div class="rm">RM551538</div></div></div>
 </div>
 </div></section>
-<footer><div class="wrap">
-OrbitGuard © 2026 · Projeto acadêmico FIAP · Publicado no Microsoft Azure App Service
-<div class="src">📡 Fonte de dados: <strong>{{ source }}</strong></div>
-</div></footer>
 
+<section class="section" id="equipe"><div class="wrap">
+<div class="sec-head"><div class="eyebrow">Global Solution · SDTCC · FIAP</div><h2>Equipe</h2></div>
+<div class="team">
+<div class="member"><div class="idx">01</div><div class="nm">João Victor dos Santos Morais</div><div class="rm">RM550453</div></div>
+<div class="member"><div class="idx">02</div><div class="nm">Pedro Henrique Farath</div><div class="rm">RM98608</div></div>
+<div class="member"><div class="idx">03</div><div class="nm">Juliana Maita</div><div class="rm">RM99224</div></div>
+<div class="member"><div class="idx">04</div><div class="nm">Luana Cabezaolias</div><div class="rm">RM99320</div></div>
+<div class="member"><div class="idx">05</div><div class="nm">Luca Vilaça</div><div class="rm">RM551538</div></div>
+</div>
+</div></section>
+
+<footer><div class="wrap">
+<div class="f-mono">OrbitGuard © 2026 · Microsoft Azure App Service</div>
+<div class="f-mono">Fonte de dados: <b>{{ source }}</b></div>
+</div></footer>
 <script>
-const q=document.getElementById('q'),f=document.getElementById('f'),tb=document.querySelector('#tbl tbody');
+const q=document.getElementById('q');
+const toggles=[...document.querySelectorAll('.toggle')];
+const tb=document.querySelector('#tbl tbody');
 const rows=[...tb.querySelectorAll('tr')];
-function apply(){const t=q.value.toLowerCase().trim(),r=f.value;rows.forEach(tr=>{const okT=!t||tr.dataset.search.includes(t);const okR=!r||tr.dataset.risk===r;tr.style.display=(okT&&okR)?'':'none';});}
-q.addEventListener('input',apply);f.addEventListener('change',apply);
+let curRisk='';
+function apply(){const t=q.value.toLowerCase().trim();rows.forEach(tr=>{const okT=!t||tr.dataset.search.includes(t);const okR=!curRisk||tr.dataset.risk===curRisk;tr.style.display=(okT&&okR)?'':'none';});}
+q.addEventListener('input',apply);
+toggles.forEach(b=>b.addEventListener('click',()=>{toggles.forEach(x=>x.classList.remove('on'));b.classList.add('on');curRisk=b.dataset.r;apply();}));
 let asc={};
 document.querySelectorAll('#tbl th').forEach((th,i)=>{th.addEventListener('click',()=>{const k=th.dataset.k;asc[k]=!asc[k];const vis=rows.slice().sort((a,b)=>{let x=a.children[i].innerText.replace('%','').replace('°','').trim();let y=b.children[i].innerText.replace('%','').replace('°','').trim();const nx=parseFloat(x),ny=parseFloat(y);if(!isNaN(nx)&&!isNaN(ny)){return asc[k]?nx-ny:ny-nx;}return asc[k]?x.localeCompare(y):y.localeCompare(x);});vis.forEach(tr=>tb.appendChild(tr));});});
 </script>
