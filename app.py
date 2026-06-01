@@ -70,7 +70,7 @@ def api_objects():
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "ok", "service": "orbitguard"})
+    return jsonify({"status": "ok", "service": "orbitguard", "version": "1.1.0"})
 
 
 if __name__ == "__main__":
